@@ -430,10 +430,10 @@ class App(tk.Tk):
 
         # Objetos
         o = self.tarjeta(rejilla, None, "Ensenar objetos (para que aprenda sola)",
-                         "Pon el juego delante de un objeto (p. ej. un tronco), escribe su nombre y pulsa "
-                         "'Marcar en pantalla': marca un trozo donde se vea SOLO ese objeto. Anade varios "
-                         "ejemplos (de cerca, de lejos, con sombra). La IA buscara, se acercara y picara/recogera "
-                         "esos objetos.", 3, 0, colspan=2)
+                         "Escribe el nombre del objeto y pulsa 'Marcar en pantalla' para marcarlo tu, o 'Ensenar "
+                         "sola' para que la IA de vision (Qwen en LM Studio) lo encuentre en la pantalla del juego. "
+                         "Tienes 3 segundos para poner el juego delante. Cuantos mas ejemplos, mejor. La IA de "
+                         "juego buscara, se acercara y picara/recogera esos objetos.", 3, 0, colspan=2)
         ttk.Label(o, text="Objeto", style="Tarjeta.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 10))
         self.objeto = tk.StringVar(value="madera")
         ttk.Combobox(o, textvariable=self.objeto, width=14, values=["madera", "piedra", "carbon", "hierro",
@@ -447,7 +447,20 @@ class App(tk.Tk):
         ttk.Button(o, text="Borrar objeto", style="Peligro.TButton", command=self.borrar_objeto
                    ).grid(row=0, column=4, padx=6)
         self.lista_objetos = ttk.Label(o, text="", style="Suave.TLabel")
-        self.lista_objetos.grid(row=1, column=0, columnspan=5, sticky="w", pady=(8, 0))
+        self.lista_objetos.grid(row=2, column=0, columnspan=5, sticky="w", pady=(8, 0))
+        ia = ttk.Frame(o, style="Tarjeta.TFrame")
+        ia.grid(row=1, column=0, columnspan=5, sticky="w", pady=(8, 0))
+        ttk.Label(ia, text="IA de vision:", style="Tarjeta.TLabel").pack(side="left")
+
+        def vision(*extra):
+            self.ejecutar("ver_pantalla.py", ["--nombre", self.pc_nombre.get(),
+                                              "--region", self.pc_region.get() or "auto", *extra])
+        ttk.Button(ia, text="Ensenar sola", style="Acento.TButton",
+                   command=lambda: vision("--ensenar", self.objeto.get())).pack(side="left", padx=6)
+        ttk.Button(ia, text="x10 (cada 20 s)",
+                   command=lambda: vision("--ensenar", self.objeto.get(), "--repetir", "10", "--cada", "20")
+                   ).pack(side="left")
+        ttk.Button(ia, text="Que ve?", command=lambda: vision("--describir")).pack(side="left", padx=6)
 
         for fila in (1, 2):
             rejilla.rowconfigure(fila, weight=1)

@@ -142,6 +142,30 @@ python autoentrenar_pc.py --nombre Minecraft --barra 450,650,380,6 --barra-color
 python autoentrenar_pc.py --nombre Minecraft --solo-jugar
 ```
 
+#### IA de visión (Qwen2.5-VL) para que entienda la pantalla
+
+Con un modelo de visión la IA puede **decir qué ve** y **encontrar objetos por su nombre** sin que tú los marques.
+Se usa **LM Studio**, que hace funcionar el modelo en la GPU (también integrada, con el motor Vulkan):
+
+1. Instala LM Studio y descarga **Qwen2.5-VL-7B-Instruct** en versión GGUF (Q4_K_M, ~5 GB).
+   Con poca memoria, mejor **Qwen2.5-VL-3B**.
+2. Ajustes → **Motor de ejecución**: elige **Vulkan llama.cpp**.
+3. Ajustes → **Valores predeterminados**: baja "Longitud mínima de contexto de AutoFit" a **4096**
+   (deja más memoria para meter el modelo en la GPU).
+4. Ajustes → **API de modelos locales**: activa **Servidor API local** (`http://localhost:1234/v1`).
+
+Después, en la interfaz (tarjeta "Enseñar objetos") o por consola:
+
+```bash
+python ver_pantalla.py --describir                                   # qué hay en la pantalla del juego
+python ver_pantalla.py --nombre Minecraft --ensenar madera           # Qwen encuentra la madera y se la enseña al detector
+python ver_pantalla.py --nombre Minecraft --ensenar madera --repetir 10 --cada 20   # varios ejemplos mientras juegas
+```
+
+Qwen es demasiado lento para mirar cada fotograma (tarda segundos), así que no juega él: **enseña** al detector
+rápido de colores, que es el que usa la IA de juego en cada fotograma. Funciona con otros servidores
+compatibles con OpenAI (Ollama: `--servidor http://localhost:11434/v1`).
+
 #### Funciona en cualquier juego sin configurar nada
 
 - **Detectar juego**: en la interfaz pulsa "Detectar juego" y haz clic en la ventana del juego durante la
@@ -246,6 +270,8 @@ entrenar_pc.py        entrena la IA que te imita
 jugar_pc.py           la IA juega sola pulsando teclas
 autoentrenar_pc.py    la IA aprende sola jugando (refuerzo con curiosidad / objetos / barra)
 ensenar_objeto.py     enseñarle objetos (madera, piedra...) marcándolos en pantalla
+ver_pantalla.py       IA de visión (Qwen2.5-VL en LM Studio): describir la pantalla y enseñar objetos sola
+juegos/vision.py      cliente del servidor de LM Studio / Ollama
 juegos/objetos.py     reconocimiento de objetos por color
 juegos/pc.py          captura de pantalla, red de imitación y teclado
 dispositivo.py        detección de CPU / GPU (incluidas integradas)
